@@ -1,15 +1,21 @@
 package com.example.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.entity.Account;
 import com.example.entity.Message;
+import com.example.exception.DuplicateUsernameException;
+import com.example.exception.RegistrationException;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
 
 import java.util.List;
+import java.util.Optional;
+
+import javax.swing.text.html.Option;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
@@ -29,16 +35,53 @@ public class SocialMediaController {
         this.messageService = messageService;
     }
 
-    /*TODO write register controller method*/
+    /**
+     * Controller handler for registering a new account.
+     * Expects an {@link Account} object in the request body.
+     * The username and password must not be blank and the password must be
+     * at least 4 characters long.
+     * 
+     * @param account  The account to be created, without an accountId
+     * @return The account with an accountId if successful
+     */
     @PostMapping("/register")
-    public ResponseEntity<Account> register() {
-        return new ResponseEntity<>(null);
+    public ResponseEntity<?> register(@RequestBody Account account) {
+
+        if (account.getUsername() == null || account.getPassword() == null) {
+            return ResponseEntity.badRequest().body("Username and password must not be empty");
+        }
+
+        try {
+            Optional<Account> createdAccount = accountService.createAccount(account);
+            return ResponseEntity.ok().body(createdAccount.get());
+        } catch(DuplicateUsernameException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        } catch(RegistrationException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
-    /*TODO write login controller method*/
+    /**
+     * Controller handler for logging in an account.
+     * Expects an {@link Account} object in the request body.
+     * 
+     * @param account The account to be logged in
+     * @return The account if the login was successful
+     */
     @PostMapping("/login")
-    public ResponseEntity<Account> login() {
-        return new ResponseEntity<>(null);
+    public ResponseEntity<?> login(@RequestBody Account account) {
+
+        if (account.getUsername() == null || account.getPassword() == null) {
+            return ResponseEntity.badRequest().body("Username and password must not be empty");
+        }
+
+        Optional<Account> loggedInAccount = accountService.login(account);
+
+        if(loggedInAccount.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            return ResponseEntity.ok().body(loggedInAccount.get());
+        }
     }
 
     /*TODO write message creation controller method*/
