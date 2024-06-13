@@ -28,9 +28,9 @@ public class AccountService {
      * 
      * @param account  The account to be created
      * @return The account if created successfully
-     * @throws DuplicateUsernameException  Thrown when the username already exists
+     * @throws DuplicateUsernameException is thrown when the username already exists
      *          in the database
-     * @throws RegistrationException  Thrown when there is an error registering
+     * @throws RegistrationException is thrown when there is an error registering
      */
     public Optional<Account> createAccount(Account account) {
 
@@ -55,5 +55,15 @@ public class AccountService {
      */
     public Optional<Account> login(Account account) {
         return accountRepository.findByUsernameAndPassword(account.getUsername(), account.getPassword());
+    }
+
+    /**
+     * Checks the database for whether an account exists using its id
+     * 
+     * @param id
+     * @return True if the account exists, false otherwise
+     */
+    public boolean accountExists(int id) {
+        return !accountRepository.findById(id).isEmpty();
     }
 }
