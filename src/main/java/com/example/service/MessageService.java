@@ -46,7 +46,7 @@ public class MessageService {
      * @return The message if it exists
      */
     public Optional<Message> getMessage(int id) {
-        return Optional.ofNullable(messageRepository.getById(id));
+        return messageRepository.findById(id);
     }
 
     /**
@@ -57,7 +57,7 @@ public class MessageService {
      * @throws MessageNotFoundException is thrown when the messageId 
      *          does not exist in the database
      */
-    public int deleteMessage(int id) {
+    public int deleteMessage(int id) throws MessageNotFoundException {
         Optional<Message> message = messageRepository.findById(id);
         if (message.isEmpty()) {
             throw new MessageNotFoundException(String.format("The messageId %d cannot be found", id));
@@ -77,7 +77,7 @@ public class MessageService {
      * @throws MessageNotFoundException is thrown when the messageId 
      *          does not exist in the database
      */
-    public int updateMessage(int id, String newText) {
+    public int updateMessage(int id, String newText) throws MessageNotFoundException {
         Optional<Message> message = messageRepository.findById(id);
         if (message.isEmpty()) {
             throw new MessageNotFoundException(String.format("The messageId %d cannot be found", id));

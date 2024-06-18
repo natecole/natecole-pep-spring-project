@@ -16,9 +16,6 @@ import com.example.service.MessageService;
 import java.util.List;
 import java.util.Optional;
 
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.Option;
-
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
  * found in readme.md as well as the test cases. You be required to use the @GET/POST/PUT/DELETE/etc Mapping annotations
@@ -51,7 +48,7 @@ public class SocialMediaController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Account account) {
 
-        if (account.getUsername() == null || account.getPassword() == null) {
+        if (account.getUsername().isEmpty() || account.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body("Username and password must not be empty");
         }
 
@@ -108,7 +105,7 @@ public class SocialMediaController {
                     .body("The account posting this message does not exist");
         }
 
-        if (message.getMessageText() == null || message.getMessageText().length() > 255) {
+        if (message.getMessageText().isEmpty() || message.getMessageText().length() > 255) {
             return ResponseEntity.badRequest()
                     .body("The message text must be between 1 and 255 characters long");
         }
@@ -134,7 +131,7 @@ public class SocialMediaController {
      * @param messageId
      * @return The message if it exists
      */
-    @GetMapping("/messages{messageId}")
+    @GetMapping("/messages/{messageId}")
     public ResponseEntity<Message> getMessage(@PathVariable int messageId) {
         Optional<Message> message = messageService.getMessage(messageId);
 
@@ -156,14 +153,13 @@ public class SocialMediaController {
      */
     @DeleteMapping("/messages/{messageId}")
     public ResponseEntity<Integer> deleteMessage(@PathVariable int messageId) {
-        int rowsAffected = messageService.deleteMessage(messageId);
-
-        if(rowsAffected == 0) {
-            return ResponseEntity.ok()
-                    .build();
-        } else {
+        try{
+            int rowsAffected = messageService.deleteMessage(messageId);
             return ResponseEntity.ok()
                     .body(rowsAffected);
+        } catch(MessageNotFoundException ex) {
+            return ResponseEntity.ok()
+                        .build();
         }
     }
 
@@ -179,15 +175,15 @@ public class SocialMediaController {
      * @return The number of rows affected if successful
      */
     @PatchMapping("/messages/{messageId}")
-    public ResponseEntity<?> updateMessage(@PathVariable int messageId, @RequestBody String messageText) {
+    public ResponseEntity<?> updateMessage(@PathVariable int messageId, @RequestBody Message message) {
 
-        if (messageText == null || messageText.length() > 255) {
+        if (message.getMessageText().isEmpty() || message.getMessageText().length() > 255) {
             return ResponseEntity.badRequest()
                     .body("The message text must be between 1 and 255 characters long");
         }
 
         try {
-            int rowsAffected = messageService.updateMessage(messageId, messageText);
+            int rowsAffected = messageService.updateMessage(messageId, message.getMessageText());
             return ResponseEntity.ok()
                     .body(rowsAffected);
         } catch (MessageNotFoundException ex) {

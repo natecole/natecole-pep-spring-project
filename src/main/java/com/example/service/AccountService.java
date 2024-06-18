@@ -2,8 +2,6 @@ package com.example.service;
 
 import java.util.Optional;
 
-import javax.swing.text.html.Option;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,10 +30,10 @@ public class AccountService {
      *          in the database
      * @throws RegistrationException is thrown when there is an error registering
      */
-    public Optional<Account> createAccount(Account account) {
+    public Optional<Account> createAccount(Account account) throws DuplicateUsernameException, RegistrationException {
 
         if(account.getPassword().length() >= 4) {
-            if (accountRepository.findByUsername(account.getUsername()) == null) {
+            if (accountRepository.findByUsername(account.getUsername()).isEmpty()) {
                 return Optional.of(accountRepository.save(account));
             } else {
                 throw new DuplicateUsernameException(account.getUsername() + " already exists");
